@@ -38,6 +38,7 @@ kable(shootings_yrpipe, caption = "Mass shootings (1982-2019)", col.names = c("Y
 ## Generate a bar chart that identifies the number of mass shooters associated with each race category. The bars should be sorted from highest to lowest.
 
 ```{r}
+### this is unnecessary. ask TAs about how i'd make a graph from this table
 shooter_race = mass_shootings %>%
   group_by(race) %>%
   summarize(
@@ -48,23 +49,35 @@ shooter_race = mass_shootings %>%
   
 library(forcats)
 require(forcats)
-# create new df w/o NA for race. shootings_race = 
-ggplot(data = mass_shootings[!is.na(mass_shootings$race), ], mapping = aes(x=fct_infreq(race))) +
+
+ggplot(data = mass_shootings[!is.na(mass_shootings$race), ], mapping = aes(x = fct_infreq(race))) +
  geom_bar() +
   labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Race of perpetrator", y = "Number of incidents")
-#this works. can also do
+
+####ask TAs about why the square brackets work, i.e. formatting of [!is.na(df$column),]
+
+#above works. can also do
 #ggplot(na.omit(mass_shootings[, c("race")]), aes(x=fct_infreq(race))) + 
  # geom_bar() +
   #labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Race of perpetrator", y = "Number of incidents")
-
-
 
 ```
 
 ## Generate a boxplot visualizing the number of total victims, by type of location. Redraw the same plot, but remove the Las Vegas Strip massacre from the dataset.
 
 ```{r}
+# w/ the LV Strip massacre
+ggplot(data = mass_shootings, mapping = aes(x = location_type, y = total_victims)) +
+ geom_boxplot() +
+  labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Type of location of incident", y = "Total number of victims")
 
+#omitting LV Strip massacre
+noLV = mass_shootings %>%
+    filter(case != "Las Vegas Strip massacre") 
+
+ggplot(data = noLV, mapping = aes(x = location_type, y = total_victims)) +
+ geom_boxplot() +
+  labs(title = "Mass shootings in the U.S. (1982-2019)", subtitle = "Omitting the Las Vegas Strip massacre", x = "Type of location of incident", y = "Total number of victims")
 ```
 
 ## How many white males with prior signs of mental illness initiated a mass shooting after 2000?
