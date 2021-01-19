@@ -1,6 +1,6 @@
 ---
-title: "Exploring Mass Shootings in America"
-author: "Benjamin Soltoff"
+title: "HW2: Exploring Mass Shootings in America"
+author: "Julia Du"
 output: github_document
 ---
 
@@ -22,8 +22,17 @@ mass_shootings
 
 ## Generate a data frame that summarizes the number of mass shootings per year. Print the data frame as a formatted `kable()` table.
 
-```{r}
+```{r, echo = TRUE}
+#shootings_yr = group_by(.data = mass_shootings, year)
+#summarize(.data = shootings_yr, count=n())
 
+### same as above, but with a pipe
+shootings_yrpipe = mass_shootings %>%
+  group_by(year) %>%
+  summarize(
+    count = n()
+  )
+kable(shootings_yrpipe, caption = "Mass shootings (1982-2019)", col.names = c("Year", "Number of mass shootings"))
 ```
 
 ## Generate a bar chart that identifies the number of mass shooters associated with each race category. The bars should be sorted from highest to lowest.
