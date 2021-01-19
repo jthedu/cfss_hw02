@@ -38,6 +38,26 @@ kable(shootings_yrpipe, caption = "Mass shootings (1982-2019)", col.names = c("Y
 ## Generate a bar chart that identifies the number of mass shooters associated with each race category. The bars should be sorted from highest to lowest.
 
 ```{r}
+shooter_race = mass_shootings %>%
+  group_by(race) %>%
+  summarize(
+    count = n() 
+  ) %>%
+  arrange(desc(count)) %>%
+  na.omit()
+  
+library(forcats)
+require(forcats)
+# create new df w/o NA for race. shootings_race = 
+ggplot(data = mass_shootings[!is.na(mass_shootings$race), ], mapping = aes(x=fct_infreq(race))) +
+ geom_bar() +
+  labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Race of perpetrator", y = "Number of incidents")
+#this works. can also do
+#ggplot(na.omit(mass_shootings[, c("race")]), aes(x=fct_infreq(race))) + 
+ # geom_bar() +
+  #labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Race of perpetrator", y = "Number of incidents")
+
+
 
 ```
 
