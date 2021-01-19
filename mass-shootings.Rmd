@@ -98,7 +98,25 @@ mass_shootings %>%
 ## Which month of the year has the most mass shootings? Generate a bar chart sorted in chronological order to provide evidence of your answer.
 
 ```{r}
+#for table, need to group shootings by month. then arrange to see which month is biggest. 
+#### this 1st block is unnecessary for answering the q!
+mass_shootings %>%
+  group_by(month) %>%
+  summarize(count = n() 
+  ) %>%
+  arrange(desc(count)) %>%
+  na.omit()
 
+month_shootings = mass_shootings
+month_shootings$month = factor(mass_shootings$month,
+                  levels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec"))
+
+ggplot(data = month_shootings[!is.na(month_shootings$month), ], mapping = aes(x = month)) +
+ geom_bar() +
+  labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Month of incident", y = "Number of incidents") +
+  scale_y_continuous(breaks=c(0,2,4,6,8,10,12))
+
+#February and June have the most mass shootings.
 ```
 
 ## How does the distribution of mass shooting fatalities differ between white and black shooters? What about white and latino shooters?
