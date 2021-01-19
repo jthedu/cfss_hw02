@@ -83,7 +83,16 @@ ggplot(data = noLV, mapping = aes(x = location_type, y = total_victims)) +
 ## How many white males with prior signs of mental illness initiated a mass shooting after 2000?
 
 ```{r}
+#filter by race = "White", male = TRUE, prior_mental_illness = "Yes", year > 2000
+mass_shootings %>%
+  filter(race == "White", male == TRUE, prior_mental_illness == "Yes", year > 2000) %>% 
+  mutate(white_after2000 = row_number()) %>%
+  glimpse()
 
+# 20 white males with prior signs of mental illness initiated a mass shooting after 2000.
+
+#### ask TAs about if you ever need to put TRUE or FAlSE in quotation marks. 
+#### also quotations vs backticks???
 ```
 
 ## Which month of the year has the most mass shootings? Generate a bar chart sorted in chronological order to provide evidence of your answer.
