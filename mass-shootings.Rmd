@@ -89,11 +89,10 @@ mass_shootings %>%
   mutate(white_after2000 = row_number()) %>%
   glimpse()
 
-# 20 white males with prior signs of mental illness initiated a mass shooting after 2000.
-
 #### ask TAs about if you ever need to put TRUE or FAlSE in quotation marks. 
 #### also quotations vs backticks???
 ```
+**20 white males with prior signs of mental illness initiated a mass shooting after 2000.**
 
 ## Which month of the year has the most mass shootings? Generate a bar chart sorted in chronological order to provide evidence of your answer.
 
@@ -115,13 +114,49 @@ ggplot(data = month_shootings[!is.na(month_shootings$month), ], mapping = aes(x 
  geom_bar() +
   labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Month of incident", y = "Number of incidents") +
   scale_y_continuous(breaks=c(0,2,4,6,8,10,12))
-
-#February and June have the most mass shootings.
 ```
+**February and June have the most mass shootings.**
 
 ## How does the distribution of mass shooting fatalities differ between white and black shooters? What about white and latino shooters?
 
 ```{r}
+#need to group shooters by race. filter out everything not white, black, or latino. 
+#must sum the # of fatalities for each race
+#then draw graphs to look at fatalities (bar graph & line graph)
+fatal_compare = mass_shootings %>%
+  group_by(race) %>%
+  summarize(
+    deaths = sum(fatalities, na.rm = TRUE)
+  ) %>%
+  filter(
+    race %in% c("White", "Black", "Latino")
+  ) 
+### DON'T THINK i need the above. gives a table of total fatalities by shooter race, but looking for distr (Not #s)
+
+
+ggplot(data = subset(mass_shootings, 
+                     race %in% c("White", "Black", "Latino")),
+mapping = aes(x = fatalities)) +
+  geom_histogram() +
+  labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Number of fatalities per incident", y = "Number of incidents") + 
+  facet_grid(race ~ ., scales = "free")
+### DO I NEED TO CHANGE THE X-AXIS OF THE FACET GRID? THINK IT'S EASIER TO COMPARE W/ SAME X-AXIS
+
+
+
+
+#attempt at smooth graph??? help pls
+ggplot(data = subset(mass_shootings, 
+                     race %in% c("White", "Black", "Latino")),
+mapping = aes(x = fatalities, color = race)) +
+  geom_density() +
+  labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Number of fatalities per incident", y = "Number of incidents") 
+### NEED HELP w/ getting counts on y-axis of smooth graph (currently using density plot)
+
+
+#ggplot(data = fatal_compare, mapping = aes(x = race)) +
+ #geom_histogram() +
+  
 
 ```
 
