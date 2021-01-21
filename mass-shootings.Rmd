@@ -22,7 +22,7 @@ mass_shootings
 
 ## Generate a data frame that summarizes the number of mass shootings per year. Print the data frame as a formatted `kable()` table.
 
-```{r, echo = TRUE}
+```{r}
 #shootings_yr = group_by(.data = mass_shootings, year)
 #summarize(.data = shootings_yr, count=n())
 
@@ -145,18 +145,13 @@ mapping = aes(x = fatalities)) +
 
 
 
-#attempt at smooth graph??? help pls
+#attempt at smooth graph
 ggplot(data = subset(mass_shootings, 
                      race %in% c("White", "Black", "Latino")),
 mapping = aes(x = fatalities, color = race)) +
-  geom_density() +
-  labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Number of fatalities per incident", y = "Number of incidents") 
-### NEED HELP w/ getting counts on y-axis of smooth graph (currently using density plot)
-
-
-#ggplot(data = fatal_compare, mapping = aes(x = race)) +
- #geom_histogram() +
-  
+  geom_freqpoly() +
+  labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Number of fatalities per incident", y = "Number of incidents") +
+  scale_color_discrete(name="Race")
 
 ```
 
@@ -171,7 +166,7 @@ ggplot(data = mass_shootings[!is.na(mass_shootings$prior_mental_illness), ], map
  geom_boxplot() +
   labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Evidence of prior mental illness from perpetrator", y = "Total number of victims")
 
-### other way to do mental ill vs victims
+### other way to do mental ill vs victims - gives same graph!
 ggplot(data = na.omit(mass_shootings[, c("prior_mental_illness", "total_victims")]), mapping = aes(x = prior_mental_illness, y = total_victims)) + 
   geom_boxplot() +
   labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Evidence of prior mental illness from perpetrator", y = "Total number of victims")
@@ -193,7 +188,9 @@ ggplot(data = na.omit(noLV[, c("race", "total_victims")]), mapping = aes(x = rac
 #victims vs race, by mental illness
 ggplot(data = na.omit(mass_shootings[, c("race", "total_victims","prior_mental_illness")]), mapping = aes(x = total_victims, y = race, fill = prior_mental_illness)) + 
   geom_boxplot() +
-  labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Total number of victims", y = "Race of perpetrator")
+  labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Total number of victims", y = "Race of perpetrator") +
+  scale_fill_discrete(name="Evidence of prior mental illness from perpetrator") +
+  theme(legend.position="bottom")
 
 ```
 **comments on graph - CHECK THIS**
