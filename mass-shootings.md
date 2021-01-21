@@ -287,23 +287,18 @@ mapping = aes(x = fatalities)) +
 
 
 
-#attempt at smooth graph??? help pls
+#attempt at smooth graph
 ggplot(data = subset(mass_shootings, 
                      race %in% c("White", "Black", "Latino")),
 mapping = aes(x = fatalities, color = race)) +
-  geom_density() +
-  labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Number of fatalities per incident", y = "Number of incidents") 
+  geom_freqpoly() +
+  labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Number of fatalities per incident", y = "Number of incidents") +
+  scale_color_discrete(name="Race")
 ```
+
+    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 
 ![](mass-shootings_files/figure-gfm/unnamed-chunk-7-2.png)<!-- -->
-
-``` r
-### NEED HELP w/ getting counts on y-axis of smooth graph (currently using density plot)
-
-
-#ggplot(data = fatal_compare, mapping = aes(x = race)) +
- #geom_histogram() +
-```
 
 ## Are mass shootings with shooters suffering from mental illness different from mass shootings with no signs of mental illness in the shooter? Assess the relationship between mental illness and total victims, mental illness and race, and the intersection of all three variables.
 
@@ -320,12 +315,61 @@ ggplot(data = mass_shootings[!is.na(mass_shootings$prior_mental_illness), ], map
 ![](mass-shootings_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
 
 ``` r
+### other way to do mental ill vs victims - gives same graph!
 ggplot(data = na.omit(mass_shootings[, c("prior_mental_illness", "total_victims")]), mapping = aes(x = prior_mental_illness, y = total_victims)) + 
   geom_boxplot() +
-  labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Race of perpetrator", y = "Number of incidents")
+  labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Evidence of prior mental illness from perpetrator", y = "Total number of victims")
 ```
 
 ![](mass-shootings_files/figure-gfm/unnamed-chunk-8-2.png)<!-- -->
+
+``` r
+##mental illness vs race - weird graph, ask TA!!!!!
+#ggplot(data = na.omit(mass_shootings[, c("prior_mental_illness", "race")]), mapping = aes(x = prior_mental_illness, y = race)) + 
+ # geom_boxplot() +
+  #labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Evidence of prior mental illness from perpetrator", y = "Race of perpetrator")
+
+#victims vs race
+ggplot(data = na.omit(mass_shootings[, c("race", "total_victims")]), mapping = aes(x = race, y = total_victims)) + 
+  geom_boxplot() +
+  labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Race of perpetrator", y = "Total number of victims")
+```
+
+![](mass-shootings_files/figure-gfm/unnamed-chunk-8-3.png)<!-- -->
+
+``` r
+#victims vs race, w/ LV massacre omitted
+ggplot(data = na.omit(noLV[, c("race", "total_victims")]), mapping = aes(x = race, y = total_victims)) + 
+  geom_boxplot() +
+  labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Race of perpetrator", y = "Total number of victims")
+```
+
+![](mass-shootings_files/figure-gfm/unnamed-chunk-8-4.png)<!-- -->
+
+``` r
+#victims vs race, by mental illness
+ggplot(data = na.omit(mass_shootings[, c("race", "total_victims","prior_mental_illness")]), mapping = aes(x = total_victims, y = race, fill = prior_mental_illness)) + 
+  geom_boxplot() +
+  labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Total number of victims", y = "Race of perpetrator") +
+  scale_fill_discrete(name="Evidence of prior mental illness from perpetrator") +
+  theme(legend.position="bottom")
+```
+
+![](mass-shootings_files/figure-gfm/unnamed-chunk-8-5.png)<!-- -->
+**comments on graph - CHECK THIS** *In general, it doesn’t seem like
+evidence of prior mental illness has that large of an effect on the
+number of victims. The median \# of total victims for perpetrators with
+mental illness is a bit higher, but it’s relatively close to
+perpetrators without mental illness. However, perpetrators with mental
+illness do have a much larger upper bound of total victims.* *White
+perpetrators seem to have higher total \#s of victims, with the
+exception of perpetrators with their race being categorized as “other.”
+Perpetrators with “Other” race likely have an extremely high median
+total \# of victims because there are only 5 such perpatrators, so the
+sample size is much smaller. *seems white perpatrators with mental
+illness tend to have higher total \# of victims. For races that had
+mental illness info available, it seems like perpetrators w/ mental
+illness had higher victim totals, regardless of race.
 
 ## Session info
 
@@ -343,7 +387,7 @@ devtools::session_info()
     ##  collate  en_US.UTF-8                         
     ##  ctype    en_US.UTF-8                         
     ##  tz       America/Chicago                     
-    ##  date     2021-01-19                          
+    ##  date     2021-01-21                          
     ## 
     ## ─ Packages ───────────────────────────────────────────────────────────────────
     ##  package     * version date       lib source                        
