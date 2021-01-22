@@ -176,14 +176,14 @@ mass_shootings %>%
     ## $ prior_mental_illness <chr> "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes",…
     ## $ white_after2000      <int> 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 1…
 
-*20 white males with prior signs of mental illness initiated a mass
-shooting after 2000.*
+> **20 white males with prior signs of mental illness initiated a mass
+> shooting after 2000.**
 
 ## Which month of the year has the most mass shootings? Generate a bar chart sorted in chronological order to provide evidence of your answer.
 
 ``` r
 mass_shootings %>%
-#  drop_na(month) %>% turns out we didn't need to do NA here since there are no NA values for months
+#  drop_na(month) %>% turns out we didn't need to drop NA here since there are no NA values for months
   mutate(month = factor(month,
                   levels = month.abb)) %>%
   count(month) %>%
@@ -196,12 +196,13 @@ mass_shootings %>%
 
 ![](mass-shootings_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
 
-*February and June have the most mass shootings.*
+> **February and June have the most mass shootings.**
 
 ## How does the distribution of mass shooting fatalities differ between white and black shooters? What about white and latino shooters?
 
 ``` r
-#need to group shooters by race. filter out only white, black, or latino. 
+#need to group shooters by race. filter only white, black, or latino. 
+#faceted graphs
 mass_shootings %>%
   group_by(race) %>%
   filter(
@@ -224,16 +225,48 @@ mass_shootings %>%
   filter(
     race %in% c("White", "Black", "Latino")
   ) %>%
-  ggplot(mapping = aes(x = fatalities, color = race)) +
-  geom_freqpoly() +
+  ggplot(mapping = aes(x = fatalities)) +
+  geom_histogram() +
   labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Number of fatalities per incident", y = "Number of incidents") +
-  scale_color_discrete(name="Race") +
-  theme_clean()
+  facet_wrap(race ~ ., scales = "free") +
+  theme_solarized()
 ```
 
     ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 
 ![](mass-shootings_files/figure-gfm/unnamed-chunk-7-2.png)<!-- -->
+
+``` r
+#freq polygon
+mass_shootings %>%
+  group_by(race) %>%
+  filter(
+    race %in% c("White", "Black", "Latino")
+  ) %>%
+  ggplot(mapping = aes(x = fatalities, color = race)) +
+  geom_freqpoly() +
+  labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Number of fatalities per incident", y = "Number of incidents") +
+  scale_color_discrete(name="Race of perpetrator") +
+  theme_clean() +
+  theme(legend.position = "bottom") 
+```
+
+    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+
+![](mass-shootings_files/figure-gfm/unnamed-chunk-7-3.png)<!-- -->
+
+> For white, Latino, & Black shooters, the distribution of mass shooting
+> fatalities seems to be right skewed. The white distribution has a
+> notable large outlier of roughly 60 fatalities in one incident - this
+> is the Las Vegas massacre. The Black distribution seems slightly more
+> spread out than the Latino distribution, but the Black distribution is
+> definitely less spread out than the white distribution. The Latino
+> distribution seems the most densely packed together and more centered
+> than the others, though that could be chalked up to its smaller sample
+> size.
+
+> There are many more white shooters than Black and Latino shooters.
+> There are slightly more Black shooters than Latino shooters.
 
 ## Are mass shootings with shooters suffering from mental illness different from mass shootings with no signs of mental illness in the shooter? Assess the relationship between mental illness and total victims, mental illness and race, and the intersection of all three variables.
 
@@ -328,25 +361,28 @@ mass_shootings %>%
 
 ![](mass-shootings_files/figure-gfm/unnamed-chunk-8-7.png)<!-- -->
 
-*In general, it doesn’t seem like evidence of prior mental illness has
-that large of an effect on the number of victims. The median \# of total
-victims for perpetrators with mental illness is a bit higher, but it’s
-relatively close to perpetrators without mental illness. However,
-perpetrators with mental illness do have a much larger upper bound of
-total victims, especially for white perpetrators.* White perpetrators
-seem to have a higher total \#s of victims, with the exception of
-perpetrators of race “Other.” Perpetrators with “Other” race have a
-noticeably higher median total \# of victims than other races, but
-because there are only 5 such perpetrators (i.e.the sample size is much
-smaller), we should be careful about concluding anything from that.
-Moreover, there was no info on if any of these “Other” race perpetrators
-showed evidence of prior mental illness. It seems that white
-perpetrators with mental illness tended to have higher total \# of
-victims. For races that had sufficient prior mental illness info
-available, it seems like perpetrators with evidence of prior mental
-illness had slightly higher victim totals, regardless of race. Across
-most races, it seems that it was more common for perpetrators to have
-evidence of prior mental illness than not.
+> **In general, it doesn’t seem like evidence of prior mental illness
+> has that large of an effect on the number of total victims per
+> incident.** The median \# of total victims for perpetrators with
+> mental illness is a bit higher, but it’s relatively close to
+> perpetrators without mental illness. However, perpetrators with mental
+> illness do have a much larger upper bound of total victims, especially
+> for white perpetrators. \> **It seems that white perpetrators with
+> mental illness tended to have higher total \# of victims.**
+
+> **Disregarding mental illness, white perpetrators seem to have a
+> higher total \#s of victims per incident.** White perpetrators had a
+> slightly higher median \# of total victims and a larger upper bound on
+> total victims - with the exception of perpetrators of race “Other.”
+> Perpetrators with “Other” race have a noticeably higher median total
+> \# of victims than other races, but because there are only 5 such
+> perpetrators (i.e.the sample size is much smaller), we should be
+> careful about concluding anything from that. Moreover, there was no
+> info on if any of these “Other” race perpetrators showed evidence of
+> prior mental illness.
+
+> **Across most races, it seems that it was more common for perpetrators
+> to have evidence of prior mental illness than not.**
 
 ## Session info
 
