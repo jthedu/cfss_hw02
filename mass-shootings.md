@@ -116,7 +116,8 @@ mass_shootings %>%
   ) %>% ungroup() %>%
   ggplot(mapping = aes(x=fct_reorder(race, -count), y = count)) + #we use -count to sort by descending
   geom_col() +
-  labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Race of perpetrator", y = "Number of incidents") 
+  labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Race of perpetrator", y = "Number of incidents") +
+  theme_solarized()
 ```
 
     ## `summarise()` ungrouping output (override with `.groups` argument)
@@ -129,7 +130,8 @@ mass_shootings %>%
 # w/ the LV Strip massacre
 ggplot(data = mass_shootings, mapping = aes(x = location_type, y = total_victims)) +
  geom_boxplot() +
-  labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Type of location of incident", y = "Total number of victims")
+  labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Type of location of incident", y = "Total number of victims") +
+  theme_solarized()
 ```
 
 ![](mass-shootings_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
@@ -140,7 +142,8 @@ mass_shootings %>%
     filter(case != "Las Vegas Strip massacre") %>%
   ggplot(mapping = aes(x = location_type, y = total_victims)) +
  geom_boxplot() +
-  labs(title = "Mass shootings in the U.S. (1982-2019)", subtitle = "Omitting the Las Vegas Strip massacre (2017)", x = "Type of location of incident", y = "Total number of victims") 
+  labs(title = "Mass shootings in the U.S. (1982-2019)", subtitle = "Omitting the Las Vegas Strip massacre (2017)", x = "Type of location of incident", y = "Total number of victims") +
+  theme_solarized()
 ```
 
 ![](mass-shootings_files/figure-gfm/unnamed-chunk-4-2.png)<!-- -->
@@ -187,7 +190,8 @@ mass_shootings %>%
   ggplot(mapping = aes(x=month, y = n)) +
   geom_col() +
   labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Month of incident", y = "Number of incidents") +
-  scale_y_continuous(breaks=seq(0,12,2))
+  scale_y_continuous(breaks=seq(0,12,2)) +
+  theme_solarized()
 ```
 
 ![](mass-shootings_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
@@ -206,7 +210,8 @@ mass_shootings %>%
   ggplot(mapping = aes(x = fatalities)) +
   geom_histogram() +
   labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Number of fatalities per incident", y = "Number of incidents") +
-  facet_grid(race ~ ., scales = "free")
+  facet_grid(race ~ ., scales = "free") +
+  theme_solarized()
 ```
 
     ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
@@ -222,7 +227,8 @@ mass_shootings %>%
   ggplot(mapping = aes(x = fatalities, color = race)) +
   geom_freqpoly() +
   labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Number of fatalities per incident", y = "Number of incidents") +
-  scale_color_discrete(name="Race")
+  scale_color_discrete(name="Race") +
+  theme_clean()
 ```
 
     ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
@@ -239,26 +245,34 @@ mass_shootings %>%
   drop_na(prior_mental_illness) %>%
   ggplot(mapping = aes(x = prior_mental_illness, y = total_victims)) +
  geom_boxplot() +
-  labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Evidence of prior mental illness from perpetrator", y = "Total number of victims")
+  labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Evidence of prior mental illness from perpetrator", y = "Total number of victims") +
+  theme_solarized()
 ```
 
 ![](mass-shootings_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
 
 ``` r
-##mental illness vs race - weird graph, ask TA!!!!!
-#ggplot(data = na.omit(mass_shootings[, c("prior_mental_illness", "race")]), mapping = aes(x = prior_mental_illness, y = race)) + 
- # geom_boxplot() +
-  #labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Evidence of prior mental illness from perpetrator", y = "Race of perpetrator")
+##mental illness vs race 
+ggplot(data = na.omit(mass_shootings[, c("prior_mental_illness", "race")]), mapping = aes(x = prior_mental_illness, fill = race)) +
+  geom_bar(position = position_dodge2(width = 0.9, preserve = "single")) +
+  labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Evidence of prior mental illness from perpetrator", y = "Number of perpetrators") +
+  scale_fill_discrete(name="Race of perpetrator") +
+  theme_clean()
+```
 
+![](mass-shootings_files/figure-gfm/unnamed-chunk-8-2.png)<!-- -->
+
+``` r
 #victims vs race
 mass_shootings %>%
   drop_na(race) %>%
   ggplot(mapping = aes(x = race, y = total_victims)) +
  geom_boxplot() +
-  labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Race of perpetrator", y = "Total number of victims")
+  labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Race of perpetrator", y = "Total number of victims") +
+  theme_solarized()
 ```
 
-![](mass-shootings_files/figure-gfm/unnamed-chunk-8-2.png)<!-- -->
+![](mass-shootings_files/figure-gfm/unnamed-chunk-8-3.png)<!-- -->
 
 ``` r
 #victims vs race - w/ log y-axis
@@ -267,10 +281,11 @@ mass_shootings %>%
   ggplot(mapping = aes(x = race, y = total_victims)) +
  geom_boxplot() +
   labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Race of perpetrator", y = "Total number of victims") +
-    scale_y_continuous(trans = "log10")
+    scale_y_continuous(trans = "log10") +
+  theme_solarized()
 ```
 
-![](mass-shootings_files/figure-gfm/unnamed-chunk-8-3.png)<!-- -->
+![](mass-shootings_files/figure-gfm/unnamed-chunk-8-4.png)<!-- -->
 
 ``` r
 #victims vs race, w/ LV massacre omitted
@@ -279,10 +294,11 @@ mass_shootings %>%
   drop_na(race) %>%
   ggplot(mapping = aes(x = race, y = total_victims)) +
  geom_boxplot() +
-  labs(title = "Mass shootings in the U.S. (1982-2019)", subtitle = "Omitting the Las Vegas Strip massacre (2017)", x = "Race of perpetrator", y = "Total number of victims")
+  labs(title = "Mass shootings in the U.S. (1982-2019)", subtitle = "Omitting the Las Vegas Strip massacre (2017)", x = "Race of perpetrator", y = "Total number of victims") +
+  theme_solarized()
 ```
 
-![](mass-shootings_files/figure-gfm/unnamed-chunk-8-4.png)<!-- -->
+![](mass-shootings_files/figure-gfm/unnamed-chunk-8-5.png)<!-- -->
 
 ``` r
 #victims vs race, by mental illness 
@@ -292,10 +308,11 @@ mass_shootings %>%
  geom_boxplot() +
   labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Total number of victims", y = "Race of perpetrator") +
   scale_fill_discrete(name="Evidence of prior mental illness from perpetrator") +
+  theme_clean() +
   theme(legend.position="bottom") 
 ```
 
-![](mass-shootings_files/figure-gfm/unnamed-chunk-8-5.png)<!-- -->
+![](mass-shootings_files/figure-gfm/unnamed-chunk-8-6.png)<!-- -->
 
 ``` r
 #mental illness vs victims, by race 
@@ -305,25 +322,31 @@ mass_shootings %>%
  geom_boxplot() +
   labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Evidence of prior mental illness from perpetrator", y = "Total number of victims") +
   scale_fill_discrete(name="Race of perpetrator") +
+  theme_clean() +
   theme(legend.position="bottom")
 ```
 
-![](mass-shootings_files/figure-gfm/unnamed-chunk-8-6.png)<!-- -->
+![](mass-shootings_files/figure-gfm/unnamed-chunk-8-7.png)<!-- -->
 
-**comments on graph - CHECK THIS** *In general, it doesn’t seem like
-evidence of prior mental illness has that large of an effect on the
-number of victims. The median \# of total victims for perpetrators with
-mental illness is a bit higher, but it’s relatively close to
-perpetrators without mental illness. However, perpetrators with mental
-illness do have a much larger upper bound of total victims.* *White
-perpetrators seem to have higher total \#s of victims, with the
-exception of perpetrators with their race being categorized as “other.”
-Perpetrators with “Other” race likely have an extremely high median
-total \# of victims because there are only 5 such perpatrators, so the
-sample size is much smaller. *seems white perpatrators with mental
-illness tend to have higher total \# of victims. For races that had
-mental illness info available, it seems like perpetrators w/ mental
-illness had higher victim totals, regardless of race.
+*In general, it doesn’t seem like evidence of prior mental illness has
+that large of an effect on the number of victims. The median \# of total
+victims for perpetrators with mental illness is a bit higher, but it’s
+relatively close to perpetrators without mental illness. However,
+perpetrators with mental illness do have a much larger upper bound of
+total victims, especially for white perpetrators.* White perpetrators
+seem to have a higher total \#s of victims, with the exception of
+perpetrators of race “Other.” Perpetrators with “Other” race have a
+noticeably higher median total \# of victims than other races, but
+because there are only 5 such perpetrators (i.e.the sample size is much
+smaller), we should be careful about concluding anything from that.
+Moreover, there was no info on if any of these “Other” race perpetrators
+showed evidence of prior mental illness. It seems that white
+perpetrators with mental illness tended to have higher total \# of
+victims. For races that had sufficient prior mental illness info
+available, it seems like perpetrators with evidence of prior mental
+illness had slightly higher victim totals, regardless of race. Across
+most races, it seems that it was more common for perpetrators to have
+evidence of prior mental illness than not.
 
 ## Session info
 
