@@ -30,6 +30,11 @@ mass_shootings %>%
     count = n()
   ) %>%
   kable(caption = "Mass shootings (1982-2019)", col.names = c("Year", "Number of mass shootings"))
+
+#deb's fast way
+mass_shootings %>%
+  count(year) %>%
+  kable(caption = "Mass shootings (1982-2019)", col.names = c("Year", "Number of mass shootings"))
 ```
 
 ## Generate a bar chart that identifies the number of mass shooters associated with each race category. The bars should be sorted from highest to lowest.
@@ -47,6 +52,14 @@ mass_shootings %>%
   ggplot(mapping = aes(x=fct_reorder(race, -count), y = count)) + #we use -count to sort by descending
   geom_col() +
   labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Race of perpetrator", y = "Number of incidents") 
+
+#deb's fast way
+mass_shootings %>%
+  count(race) %>%
+  drop_na(race) %>%
+  ggplot(aes(x=fct_reorder(race, -n), y = n)) + 
+  geom_col()
+
 ```
 
 ## Generate a boxplot visualizing the number of total victims, by type of location. Redraw the same plot, but remove the Las Vegas Strip massacre from the dataset.
@@ -134,28 +147,18 @@ mass_shootings %>%
   ggplot(mapping = aes(x = fatalities)) +
   geom_histogram() +
   labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Number of fatalities per incident", y = "Number of incidents") +
-  facet_grid(race ~ ., scales = "free") 
-### kinda unsure why 2nd chuck works (& 1st doesn't). also can i pipe 2 ggplots in a row? ASK ABOUT THIS
-
-#attempt to pipe both graphs????? or create a new pipe for 2nd graph?
-###also need to answer this q for final q - cuz otherwise have to keep rewriting pipe (to get all the diff graphs), i think....
-
-
-#add onto current pipe, can use facet_wrap
-ggplot(data = subset(mass_shootings, 
-                     race %in% c("White", "Black", "Latino")),
-mapping = aes(x = fatalities)) +
-  geom_histogram() +
-  labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Number of fatalities per incident", y = "Number of incidents") + 
   facet_grid(race ~ ., scales = "free")
-#attempt at smooth graph
-ggplot(data = subset(mass_shootings, 
-                     race %in% c("White", "Black", "Latino")),
-mapping = aes(x = fatalities, color = race)) +
+
+
+mass_shootings %>%
+  group_by(race) %>%
+  filter(
+    race %in% c("White", "Black", "Latino")
+  ) %>%
+  ggplot(mapping = aes(x = fatalities, color = race)) +
   geom_freqpoly() +
   labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Number of fatalities per incident", y = "Number of incidents") +
   scale_color_discrete(name="Race")
-
 ```
 
 ## Are mass shootings with shooters suffering from mental illness different from mass shootings with no signs of mental illness in the shooter? Assess the relationship between mental illness and total victims, mental illness and race, and the intersection of all three variables.
@@ -166,9 +169,24 @@ mapping = aes(x = fatalities, color = race)) +
 
 #### CHANGE TO NA_DROP & PIPING? 
 
+mass_shootings %>%
+  drop_na(prior_mental_illness) %>%
+  group_by(race) %>%
+  summarize(
+    count = n() 
+  ) %>% ungroup() %>%
+  ggplot(mapping = aes(x=fct_reorder(race, -count), y = count)) + #we use -count to sort by descending
+  geom_col() +
+  labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Race of perpetrator", y = "Number of incidents") 
+
+
+
 
 #mental illness vs total victims
-ggplot(data = mass_shootings[!is.na(mass_shootings$prior_mental_illness), ], mapping = aes(x = prior_mental_illness, y = total_victims)) +
+mass_shootings %>%
+  #filter(case != "Las Vegas Strip massacre") %>%
+  drop_na(prior_mental_illness) %>%
+  ggplot(mapping = aes(x = prior_mental_illness, y = total_victims)) +
  geom_boxplot() +
   labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Evidence of prior mental illness from perpetrator", y = "Total number of victims")
 
@@ -183,33 +201,49 @@ ggplot(data = na.omit(mass_shootings[, c("prior_mental_illness", "total_victims"
   #labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Evidence of prior mental illness from perpetrator", y = "Race of perpetrator")
 
 #victims vs race
-ggplot(data = na.omit(mass_shootings[, c("race", "total_victims")]), mapping = aes(x = race, y = total_victims)) + 
-  geom_boxplot() +
+mass_shootings %>%
+  #filter(case != "Las Vegas Strip massacre") %>%
+  drop_na(race) %>%
+  ggplot(mapping = aes(x = race, y = total_victims)) +
+ geom_boxplot() +
   labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Race of perpetrator", y = "Total number of victims")
 
 #victims vs race - w/ log y-axis
-ggplot(data = na.omit(mass_shootings[, c("race", "total_victims")]), mapping = aes(x = race, y = total_victims)) + 
-  geom_boxplot() +
+mass_shootings %>%
+  #filter(case != "Las Vegas Strip massacre") %>%
+  drop_na(race) %>%
+  ggplot(mapping = aes(x = race, y = total_victims)) +
+ geom_boxplot() +
   labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Race of perpetrator", y = "Total number of victims") +
-  scale_y_continuous(trans = "log10")
-  
+    scale_y_continuous(trans = "log10")
+
 #victims vs race, w/ LV massacre omitted
 #omitting LV Strip massacre
-noLV = mass_shootings %>%
-    filter(case != "Las Vegas Strip massacre") 
-ggplot(data = na.omit(noLV[, c("race", "total_victims")]), mapping = aes(x = race, y = total_victims)) + 
-  geom_boxplot() +
+mass_shootings %>%
+  filter(case != "Las Vegas Strip massacre") %>%
+  drop_na(race) %>%
+  ggplot(mapping = aes(x = race, y = total_victims)) +
+ geom_boxplot() +
   labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Race of perpetrator", y = "Total number of victims")
-###could i use outlier.case as alternative????
 
 
-#victims vs race, by mental illness
-ggplot(data = na.omit(mass_shootings[, c("race", "total_victims","prior_mental_illness")]), mapping = aes(x = total_victims, y = race, fill = prior_mental_illness)) + 
-  geom_boxplot() +
+#victims vs race, by mental illness 
+mass_shootings %>%
+  drop_na(race, prior_mental_illness) %>%
+  ggplot(mapping = aes(x = total_victims, y = race, fill = prior_mental_illness)) +
+ geom_boxplot() +
   labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Total number of victims", y = "Race of perpetrator") +
   scale_fill_discrete(name="Evidence of prior mental illness from perpetrator") +
   theme(legend.position="bottom")
 
+#mental illness vs victims, by race 
+mass_shootings %>%
+  drop_na(race, prior_mental_illness) %>%
+  ggplot(mapping = aes(x = prior_mental_illness, y = total_victims, fill = race)) +
+ geom_boxplot() +
+  labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Evidence of prior mental illness from perpetrator", y = "Total number of victims") +
+  scale_fill_discrete(name="Race of perpetrator") +
+  theme(legend.position="bottom")
 ```
 **comments on graph - CHECK THIS**
 *In general, it doesn't seem like evidence of prior mental illness has that large of an effect on the number of victims. The median # of total victims for perpetrators with mental illness is a bit higher, but it's relatively close to perpetrators without mental illness. However, perpetrators with mental illness do have a much larger upper bound of total victims.*
