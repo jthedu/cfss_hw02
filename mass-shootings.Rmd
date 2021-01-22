@@ -19,10 +19,6 @@ library(rcfss)
 # load the data
 data("mass_shootings")
 mass_shootings
-
-#+
-  theme_solarized() +
-  scale_colour_solarized()
 ```
 
 ## Generate a data frame that summarizes the number of mass shootings per year. Print the data frame as a formatted `kable()` table.
@@ -93,7 +89,7 @@ mass_shootings %>%
   ggplot(mapping = aes(x=month, y = n)) +
   geom_col() +
   labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Month of incident", y = "Number of incidents") +
-  scale_y_continuous(breaks=c(0,2,4,6,8,10,12))
+  scale_y_continuous(breaks=seq(0,12,2))
 
 #ask why don't need to do NA above - think it's cuz there are no NA values for months. can still have drop_na,
 #but it doesn't make a difference in end result
@@ -106,7 +102,7 @@ month_shootings$month = factor(mass_shootings$month,
 ggplot(data = month_shootings[!is.na(month_shootings$month), ], mapping = aes(x = month)) +
  geom_bar() +
   labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Month of incident", y = "Number of incidents") +
-  scale_y_continuous(breaks=c(0,2,4,6,8,10,12))
+  scale_y_continuous(breaks=seq(0,12,2))
 ```
 **February and June have the most mass shootings.**
 
@@ -129,6 +125,7 @@ mass_shootings %>%
   labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Number of fatalities per incident", y = "Number of incidents") +
   facet_grid(race ~ ., scales = "free")
 
+### this DEFINITELY gives me the faceted graph.
 mass_shootings %>%
   group_by(race) %>%
   filter(
@@ -137,9 +134,12 @@ mass_shootings %>%
   ggplot(mapping = aes(x = fatalities)) +
   geom_histogram() +
   labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Number of fatalities per incident", y = "Number of incidents") +
-  facet_grid(race ~ ., scales = "free")
+  facet_grid(race ~ ., scales = "free") 
+### kinda unsure why 2nd chuck works (& 1st doesn't). also can i pipe 2 ggplots in a row? ASK ABOUT THIS
 
-### kinda unsure why 2nd chuck works (& 1st doesn't). ASK ABOUT THIS
+#attempt to pipe both graphs????? or create a new pipe for 2nd graph?
+###also need to answer this q for final q - cuz otherwise have to keep rewriting pipe (to get all the diff graphs), i think....
+
 
 #add onto current pipe, can use facet_wrap
 ggplot(data = subset(mass_shootings, 
@@ -164,6 +164,9 @@ mapping = aes(x = fatalities, color = race)) +
 #need to create graphs between mental illness & total victims. mental illness & race. 
 #then create a final graph between mental illness, race, & total victims. ~~~use color = mental illness 
 
+#### CHANGE TO NA_DROP & PIPING? 
+
+
 #mental illness vs total victims
 ggplot(data = mass_shootings[!is.na(mass_shootings$prior_mental_illness), ], mapping = aes(x = prior_mental_illness, y = total_victims)) +
  geom_boxplot() +
@@ -183,10 +186,22 @@ ggplot(data = na.omit(mass_shootings[, c("prior_mental_illness", "total_victims"
 ggplot(data = na.omit(mass_shootings[, c("race", "total_victims")]), mapping = aes(x = race, y = total_victims)) + 
   geom_boxplot() +
   labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Race of perpetrator", y = "Total number of victims")
+
+#victims vs race - w/ log y-axis
+ggplot(data = na.omit(mass_shootings[, c("race", "total_victims")]), mapping = aes(x = race, y = total_victims)) + 
+  geom_boxplot() +
+  labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Race of perpetrator", y = "Total number of victims") +
+  scale_y_continuous(trans = "log10")
+  
 #victims vs race, w/ LV massacre omitted
+#omitting LV Strip massacre
+noLV = mass_shootings %>%
+    filter(case != "Las Vegas Strip massacre") 
 ggplot(data = na.omit(noLV[, c("race", "total_victims")]), mapping = aes(x = race, y = total_victims)) + 
   geom_boxplot() +
   labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Race of perpetrator", y = "Total number of victims")
+###could i use outlier.case as alternative????
+
 
 #victims vs race, by mental illness
 ggplot(data = na.omit(mass_shootings[, c("race", "total_victims","prior_mental_illness")]), mapping = aes(x = total_victims, y = race, fill = prior_mental_illness)) + 
