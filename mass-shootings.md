@@ -21,6 +21,7 @@ library(tidyverse)    # load tidyverse packages, including ggplot2
 
 ``` r
 library(knitr)        # load functions for formatting tables
+library(ggthemes) 
 
 # get data from rcfss package
 # install latest version if not already installed
@@ -51,22 +52,15 @@ mass_shootings
 ## Generate a data frame that summarizes the number of mass shootings per year. Print the data frame as a formatted `kable()` table.
 
 ``` r
-#shootings_yr = group_by(.data = mass_shootings, year)
-#summarize(.data = shootings_yr, count=n())
-
-### same as above, but with a pipe
-shootings_yrpipe = mass_shootings %>%
+mass_shootings %>%
   group_by(year) %>%
   summarize(
     count = n()
-  )
+  ) %>%
+  kable(caption = "Mass shootings (1982-2019)", col.names = c("Year", "Number of mass shootings"))
 ```
 
     ## `summarise()` ungrouping output (override with `.groups` argument)
-
-``` r
-kable(shootings_yrpipe, caption = "Mass shootings (1982-2019)", col.names = c("Year", "Number of mass shootings"))
-```
 
 | Year | Number of mass shootings |
 | ---: | -----------------------: |
@@ -111,37 +105,23 @@ Mass shootings (1982-2019)
 ## Generate a bar chart that identifies the number of mass shooters associated with each race category. The bars should be sorted from highest to lowest.
 
 ``` r
-### this is unnecessary. ask TAs about how i'd make a graph from this table
-shooter_race = mass_shootings %>%
+library(forcats)
+require(forcats)
+
+mass_shootings %>%
+  drop_na(race) %>%
   group_by(race) %>%
   summarize(
     count = n() 
-  ) %>%
-  arrange(desc(count)) %>%
-  na.omit()
+  ) %>% ungroup() %>%
+  ggplot(mapping = aes(x=fct_reorder(race, -count), y = count)) + #we use -count to sort by descending
+  geom_col() +
+  labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Race of perpetrator", y = "Number of incidents") 
 ```
 
     ## `summarise()` ungrouping output (override with `.groups` argument)
 
-``` r
-library(forcats)
-require(forcats)
-
-ggplot(data = mass_shootings[!is.na(mass_shootings$race), ], mapping = aes(x = fct_infreq(race))) +
- geom_bar() +
-  labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Race of perpetrator", y = "Number of incidents")
-```
-
 ![](mass-shootings_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
-
-``` r
-####ask TAs about why the square brackets work, i.e. formatting of [!is.na(df$column),]
-
-#above works. can also do
-#ggplot(data = na.omit(mass_shootings[, c("race")]), aes(x=fct_infreq(race))) + 
- # geom_bar() +
-  #labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Race of perpetrator", y = "Number of incidents")
-```
 
 ## Generate a boxplot visualizing the number of total victims, by type of location. Redraw the same plot, but remove the Las Vegas Strip massacre from the dataset.
 
@@ -156,12 +136,11 @@ ggplot(data = mass_shootings, mapping = aes(x = location_type, y = total_victims
 
 ``` r
 #omitting LV Strip massacre
-noLV = mass_shootings %>%
-    filter(case != "Las Vegas Strip massacre") 
-
-ggplot(data = noLV, mapping = aes(x = location_type, y = total_victims)) +
+mass_shootings %>%
+    filter(case != "Las Vegas Strip massacre") %>%
+  ggplot(mapping = aes(x = location_type, y = total_victims)) +
  geom_boxplot() +
-  labs(title = "Mass shootings in the U.S. (1982-2019)", subtitle = "Omitting the Las Vegas Strip massacre (2017)", x = "Type of location of incident", y = "Total number of victims")
+  labs(title = "Mass shootings in the U.S. (1982-2019)", subtitle = "Omitting the Las Vegas Strip massacre (2017)", x = "Type of location of incident", y = "Total number of victims") 
 ```
 
 ![](mass-shootings_files/figure-gfm/unnamed-chunk-4-2.png)<!-- -->
@@ -171,7 +150,7 @@ ggplot(data = noLV, mapping = aes(x = location_type, y = total_victims)) +
 ``` r
 #filter by race = "White", male = TRUE, prior_mental_illness = "Yes", year > 2000
 mass_shootings %>%
-  filter(race == "White", male == TRUE, prior_mental_illness == "Yes", year > 2000) %>% 
+  filter(race == "White", male, prior_mental_illness == "Yes", year > 2000) %>% 
   mutate(white_after2000 = row_number()) %>%
   glimpse()
 ```
@@ -194,86 +173,39 @@ mass_shootings %>%
     ## $ prior_mental_illness <chr> "Yes", "Yes", "Yes", "Yes", "Yes", "Yes", "Yes",…
     ## $ white_after2000      <int> 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 1…
 
-``` r
-#### ask TAs about if you ever need to put TRUE or FAlSE in quotation marks. 
-#### also quotations vs backticks???
-```
-
-**20 white males with prior signs of mental illness initiated a mass
-shooting after 2000.**
+*20 white males with prior signs of mental illness initiated a mass
+shooting after 2000.*
 
 ## Which month of the year has the most mass shootings? Generate a bar chart sorted in chronological order to provide evidence of your answer.
 
 ``` r
-#for table, need to group shootings by month. then arrange to see which month is biggest. 
-#### this 1st block is unnecessary for answering the q!
 mass_shootings %>%
-  group_by(month) %>%
-  summarize(count = n() 
-  ) %>%
-  arrange(desc(count)) %>%
-  na.omit()
-```
-
-    ## `summarise()` ungrouping output (override with `.groups` argument)
-
-    ## # A tibble: 12 x 2
-    ##    month count
-    ##    <chr> <int>
-    ##  1 Feb      12
-    ##  2 Jun      12
-    ##  3 Nov      11
-    ##  4 Oct      11
-    ##  5 Apr      10
-    ##  6 Jul      10
-    ##  7 Sep      10
-    ##  8 Dec       9
-    ##  9 Mar       8
-    ## 10 Aug       7
-    ## 11 Jan       7
-    ## 12 May       7
-
-``` r
-month_shootings = mass_shootings
-month_shootings$month = factor(mass_shootings$month,
-                  levels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec"))
-
-ggplot(data = month_shootings[!is.na(month_shootings$month), ], mapping = aes(x = month)) +
- geom_bar() +
+#  drop_na(month) %>% turns out we didn't need to do NA here since there are no NA values for months
+  mutate(month = factor(month,
+                  levels = month.abb)) %>%
+  count(month) %>%
+  ggplot(mapping = aes(x=month, y = n)) +
+  geom_col() +
   labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Month of incident", y = "Number of incidents") +
-  scale_y_continuous(breaks=c(0,2,4,6,8,10,12))
+  scale_y_continuous(breaks=seq(0,12,2))
 ```
 
 ![](mass-shootings_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
-**February and June have the most mass shootings.**
+
+*February and June have the most mass shootings.*
 
 ## How does the distribution of mass shooting fatalities differ between white and black shooters? What about white and latino shooters?
 
 ``` r
-#need to group shooters by race. filter out everything not white, black, or latino. 
-#must sum the # of fatalities for each race
-#then draw graphs to look at fatalities (bar graph & line graph)
-fatal_compare = mass_shootings %>%
+#need to group shooters by race. filter out only white, black, or latino. 
+mass_shootings %>%
   group_by(race) %>%
-  summarize(
-    deaths = sum(fatalities, na.rm = TRUE)
-  ) %>%
   filter(
     race %in% c("White", "Black", "Latino")
-  ) 
-```
-
-    ## `summarise()` ungrouping output (override with `.groups` argument)
-
-``` r
-### DON'T THINK i need the above. gives a table of total fatalities by shooter race, but looking for distr (Not #s)
-
-
-ggplot(data = subset(mass_shootings, 
-                     race %in% c("White", "Black", "Latino")),
-mapping = aes(x = fatalities)) +
+  ) %>%
+  ggplot(mapping = aes(x = fatalities)) +
   geom_histogram() +
-  labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Number of fatalities per incident", y = "Number of incidents") + 
+  labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Number of fatalities per incident", y = "Number of incidents") +
   facet_grid(race ~ ., scales = "free")
 ```
 
@@ -282,15 +214,12 @@ mapping = aes(x = fatalities)) +
 ![](mass-shootings_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
 
 ``` r
-### DO I NEED TO CHANGE THE X-AXIS OF THE FACET GRID? THINK IT'S EASIER TO COMPARE W/ SAME X-AXIS
-
-
-
-
-#attempt at smooth graph
-ggplot(data = subset(mass_shootings, 
-                     race %in% c("White", "Black", "Latino")),
-mapping = aes(x = fatalities, color = race)) +
+mass_shootings %>%
+  group_by(race) %>%
+  filter(
+    race %in% c("White", "Black", "Latino")
+  ) %>%
+  ggplot(mapping = aes(x = fatalities, color = race)) +
   geom_freqpoly() +
   labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Number of fatalities per incident", y = "Number of incidents") +
   scale_color_discrete(name="Race")
@@ -303,25 +232,17 @@ mapping = aes(x = fatalities, color = race)) +
 ## Are mass shootings with shooters suffering from mental illness different from mass shootings with no signs of mental illness in the shooter? Assess the relationship between mental illness and total victims, mental illness and race, and the intersection of all three variables.
 
 ``` r
-#need to create graphs between mental illness & total victims. mental illness & race. 
-#then create a final graph between mental illness, race, & total victims. ~~~use color = mental illness 
+#need to create graphs between mental illness & total victims. mental illness & race. then create a final graph between mental illness, race, & total victims.
 
 #mental illness vs total victims
-ggplot(data = mass_shootings[!is.na(mass_shootings$prior_mental_illness), ], mapping = aes(x = prior_mental_illness, y = total_victims)) +
+mass_shootings %>%
+  drop_na(prior_mental_illness) %>%
+  ggplot(mapping = aes(x = prior_mental_illness, y = total_victims)) +
  geom_boxplot() +
   labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Evidence of prior mental illness from perpetrator", y = "Total number of victims")
 ```
 
 ![](mass-shootings_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
-
-``` r
-### other way to do mental ill vs victims - gives same graph!
-ggplot(data = na.omit(mass_shootings[, c("prior_mental_illness", "total_victims")]), mapping = aes(x = prior_mental_illness, y = total_victims)) + 
-  geom_boxplot() +
-  labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Evidence of prior mental illness from perpetrator", y = "Total number of victims")
-```
-
-![](mass-shootings_files/figure-gfm/unnamed-chunk-8-2.png)<!-- -->
 
 ``` r
 ##mental illness vs race - weird graph, ask TA!!!!!
@@ -330,32 +251,65 @@ ggplot(data = na.omit(mass_shootings[, c("prior_mental_illness", "total_victims"
   #labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Evidence of prior mental illness from perpetrator", y = "Race of perpetrator")
 
 #victims vs race
-ggplot(data = na.omit(mass_shootings[, c("race", "total_victims")]), mapping = aes(x = race, y = total_victims)) + 
-  geom_boxplot() +
+mass_shootings %>%
+  drop_na(race) %>%
+  ggplot(mapping = aes(x = race, y = total_victims)) +
+ geom_boxplot() +
   labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Race of perpetrator", y = "Total number of victims")
+```
+
+![](mass-shootings_files/figure-gfm/unnamed-chunk-8-2.png)<!-- -->
+
+``` r
+#victims vs race - w/ log y-axis
+mass_shootings %>%
+  drop_na(race) %>%
+  ggplot(mapping = aes(x = race, y = total_victims)) +
+ geom_boxplot() +
+  labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Race of perpetrator", y = "Total number of victims") +
+    scale_y_continuous(trans = "log10")
 ```
 
 ![](mass-shootings_files/figure-gfm/unnamed-chunk-8-3.png)<!-- -->
 
 ``` r
 #victims vs race, w/ LV massacre omitted
-ggplot(data = na.omit(noLV[, c("race", "total_victims")]), mapping = aes(x = race, y = total_victims)) + 
-  geom_boxplot() +
-  labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Race of perpetrator", y = "Total number of victims")
+mass_shootings %>%
+  filter(case != "Las Vegas Strip massacre") %>%
+  drop_na(race) %>%
+  ggplot(mapping = aes(x = race, y = total_victims)) +
+ geom_boxplot() +
+  labs(title = "Mass shootings in the U.S. (1982-2019)", subtitle = "Omitting the Las Vegas Strip massacre (2017)", x = "Race of perpetrator", y = "Total number of victims")
 ```
 
 ![](mass-shootings_files/figure-gfm/unnamed-chunk-8-4.png)<!-- -->
 
 ``` r
-#victims vs race, by mental illness
-ggplot(data = na.omit(mass_shootings[, c("race", "total_victims","prior_mental_illness")]), mapping = aes(x = total_victims, y = race, fill = prior_mental_illness)) + 
-  geom_boxplot() +
+#victims vs race, by mental illness 
+mass_shootings %>%
+  drop_na(race, prior_mental_illness) %>%
+  ggplot(mapping = aes(x = total_victims, y = race, fill = prior_mental_illness)) +
+ geom_boxplot() +
   labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Total number of victims", y = "Race of perpetrator") +
   scale_fill_discrete(name="Evidence of prior mental illness from perpetrator") +
-  theme(legend.position="bottom")
+  theme(legend.position="bottom") 
 ```
 
 ![](mass-shootings_files/figure-gfm/unnamed-chunk-8-5.png)<!-- -->
+
+``` r
+#mental illness vs victims, by race 
+mass_shootings %>%
+  drop_na(race, prior_mental_illness) %>%
+  ggplot(mapping = aes(x = prior_mental_illness, y = total_victims, fill = race)) +
+ geom_boxplot() +
+  labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Evidence of prior mental illness from perpetrator", y = "Total number of victims") +
+  scale_fill_discrete(name="Race of perpetrator") +
+  theme(legend.position="bottom")
+```
+
+![](mass-shootings_files/figure-gfm/unnamed-chunk-8-6.png)<!-- -->
+
 **comments on graph - CHECK THIS** *In general, it doesn’t seem like
 evidence of prior mental illness has that large of an effect on the
 number of victims. The median \# of total victims for perpetrators with
@@ -387,7 +341,7 @@ devtools::session_info()
     ##  collate  en_US.UTF-8                         
     ##  ctype    en_US.UTF-8                         
     ##  tz       America/Chicago                     
-    ##  date     2021-01-21                          
+    ##  date     2021-01-22                          
     ## 
     ## ─ Packages ───────────────────────────────────────────────────────────────────
     ##  package     * version date       lib source                        
@@ -413,6 +367,7 @@ devtools::session_info()
     ##  fs            1.5.0   2020-07-31 [2] CRAN (R 4.0.1)                
     ##  generics      0.1.0   2020-10-31 [2] CRAN (R 4.0.1)                
     ##  ggplot2     * 3.3.3   2020-12-30 [2] CRAN (R 4.0.1)                
+    ##  ggthemes    * 4.2.4   2021-01-20 [1] CRAN (R 4.0.1)                
     ##  glue          1.4.2   2020-08-27 [2] CRAN (R 4.0.1)                
     ##  gtable        0.3.0   2019-03-25 [2] CRAN (R 4.0.1)                
     ##  haven         2.3.1   2020-06-01 [2] CRAN (R 4.0.1)                
