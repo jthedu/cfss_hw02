@@ -9,6 +9,7 @@ output: github_document
 ```{r, echo = TRUE}
 library(tidyverse)    # load tidyverse packages, including ggplot2
 library(knitr)        # load functions for formatting tables
+library(ggthemes) 
 
 # get data from rcfss package
 # install latest version if not already installed
@@ -18,52 +19,38 @@ library(rcfss)
 # load the data
 data("mass_shootings")
 mass_shootings
+
+#+
+  theme_solarized() +
+  scale_colour_solarized()
 ```
 
 ## Generate a data frame that summarizes the number of mass shootings per year. Print the data frame as a formatted `kable()` table.
 
 ```{r}
-#shootings_yr = group_by(.data = mass_shootings, year)
-#summarize(.data = shootings_yr, count=n())
-
-### same as above, but with a pipe
-shootings_yrpipe = mass_shootings %>%
+mass_shootings %>%
   group_by(year) %>%
   summarize(
     count = n()
-  )
-kable(shootings_yrpipe, caption = "Mass shootings (1982-2019)", col.names = c("Year", "Number of mass shootings"))
+  ) %>%
+  kable(caption = "Mass shootings (1982-2019)", col.names = c("Year", "Number of mass shootings"))
 ```
 
 ## Generate a bar chart that identifies the number of mass shooters associated with each race category. The bars should be sorted from highest to lowest.
 
 ```{r}
-### this is unnecessary. ask TAs about how i'd make a graph from this table
+library(forcats)
+require(forcats)
+
 mass_shootings %>%
   drop_na(race) %>%
   group_by(race) %>%
   summarize(
     count = n() 
   ) %>% ungroup() %>%
-  ggplot(mapping = aes(x=fct_reorder(race, -count), y = count)) +
-  geom_col()
-
-library(forcats)
-require(forcats)
-
-ggplot(data = mass_shootings[!is.na(mass_shootings$race), ], mapping = aes(x = fct_infreq(race))) +
- geom_bar() +
-  labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Race of perpetrator", y = "Number of incidents")
-
-####ask TAs about why the square brackets work, i.e. formatting of [!is.na(df$column),]
-#above works. can also do
-#ggplot(data = na.omit(mass_shootings[, c("race")]), aes(x=fct_infreq(race))) + 
- # geom_bar() +
-  #labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Race of perpetrator", y = "Number of incidents")
-#%>%
-  arrange(desc(count)) %>%
-  na.omit()
-
+  ggplot(mapping = aes(x=fct_reorder(race, -count), y = count)) + #we use -count to sort by descending
+  geom_col() +
+  labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Race of perpetrator", y = "Number of incidents") 
 ```
 
 ## Generate a boxplot visualizing the number of total victims, by type of location. Redraw the same plot, but remove the Las Vegas Strip massacre from the dataset.
@@ -75,12 +62,12 @@ ggplot(data = mass_shootings, mapping = aes(x = location_type, y = total_victims
   labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Type of location of incident", y = "Total number of victims")
 
 #omitting LV Strip massacre
-noLV = mass_shootings %>%
-    filter(case != "Las Vegas Strip massacre") 
-
-ggplot(data = noLV, mapping = aes(x = location_type, y = total_victims)) +
+mass_shootings %>%
+    filter(case != "Las Vegas Strip massacre") %>%
+  ggplot(mapping = aes(x = location_type, y = total_victims)) +
  geom_boxplot() +
-  labs(title = "Mass shootings in the U.S. (1982-2019)", subtitle = "Omitting the Las Vegas Strip massacre (2017)", x = "Type of location of incident", y = "Total number of victims")
+  labs(title = "Mass shootings in the U.S. (1982-2019)", subtitle = "Omitting the Las Vegas Strip massacre (2017)", x = "Type of location of incident", y = "Total number of victims") +
+  theme_solarized()
 ```
 
 ## How many white males with prior signs of mental illness initiated a mass shooting after 2000?
@@ -88,17 +75,9 @@ ggplot(data = noLV, mapping = aes(x = location_type, y = total_victims)) +
 ```{r}
 #filter by race = "White", male = TRUE, prior_mental_illness = "Yes", year > 2000
 mass_shootings %>%
-  filter(race == "White", male == TRUE, prior_mental_illness == "Yes", year > 2000) %>% 
+  filter(race == "White", male, prior_mental_illness == "Yes", year > 2000) %>% 
   mutate(white_after2000 = row_number()) %>%
   glimpse()
-
-#### ask TAs about if you ever need to put TRUE or FAlSE in quotation marks. 
-#for this case, can just write "male". if looking for non-male, do "!male"
-
-#### also quotations vs backticks
-#backticks when you select columns
-#e.g. filter(`Race of Shooter` == “White”)
-
 ```
 **20 white males with prior signs of mental illness initiated a mass shooting after 2000.**
 
@@ -106,27 +85,23 @@ mass_shootings %>%
 
 ```{r}
 #for table, need to group shootings by month. then arrange to see which month is biggest. 
-#### this 1st block is unnecessary for answering the q!
 mass_shootings %>%
-  mutate(month = factor(month,
-                  levels = month.abb)) %>%
-  group_by(month) %>%
-  summarize(count = n() )   %>%
-  ungroup() %>%
-  ggplot(mapping = aes(x=month, y = count)) +
-  geom_col()
-  
-mass_shootings %>%
+  #drop_na(month) %>%
   mutate(month = factor(month,
                   levels = month.abb)) %>%
   count(month) %>%
   ggplot(mapping = aes(x=month, y = n)) +
-  geom_col()
+  geom_col() +
+  labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Month of incident", y = "Number of incidents") +
+  scale_y_continuous(breaks=c(0,2,4,6,8,10,12))
 
+#ask why don't need to do NA above - think it's cuz there are no NA values for months. can still have drop_na,
+#but it doesn't make a difference in end result
+#######also, drop_na doesn't change original dataframe, correct?????
+# DELETE BELOW!!!!!
 month_shootings = mass_shootings
 month_shootings$month = factor(mass_shootings$month,
                   levels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec"))
-#levels = month.abb
 
 ggplot(data = month_shootings[!is.na(month_shootings$month), ], mapping = aes(x = month)) +
  geom_bar() +
@@ -141,28 +116,38 @@ ggplot(data = month_shootings[!is.na(month_shootings$month), ], mapping = aes(x 
 #need to group shooters by race. filter out everything not white, black, or latino. 
 #must sum the # of fatalities for each race
 #then draw graphs to look at fatalities (bar graph & line graph)
-fatal_compare = mass_shootings %>%
+mass_shootings %>%
   group_by(race) %>%
   summarize(
     deaths = sum(fatalities, na.rm = TRUE)
   ) %>%
   filter(
     race %in% c("White", "Black", "Latino")
-  ) 
-### DON'T THINK i need the above. gives a table of total fatalities by shooter race, but looking for distr (Not #s)
+  ) %>%
+  ggplot(mapping = aes(x = fatalities, y = count)) +
+  geom_col() +
+  labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Number of fatalities per incident", y = "Number of incidents") +
+  facet_grid(race ~ ., scales = "free")
 
+mass_shootings %>%
+  group_by(race) %>%
+  filter(
+    race %in% c("White", "Black", "Latino")
+  ) %>%
+  ggplot(mapping = aes(x = fatalities)) +
+  geom_histogram() +
+  labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Number of fatalities per incident", y = "Number of incidents") +
+  facet_grid(race ~ ., scales = "free")
 
+### kinda unsure why 2nd chuck works (& 1st doesn't). ASK ABOUT THIS
+
+#add onto current pipe, can use facet_wrap
 ggplot(data = subset(mass_shootings, 
                      race %in% c("White", "Black", "Latino")),
 mapping = aes(x = fatalities)) +
   geom_histogram() +
   labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Number of fatalities per incident", y = "Number of incidents") + 
   facet_grid(race ~ ., scales = "free")
-### DO I NEED TO CHANGE THE X-AXIS OF THE FACET GRID? THINK IT'S EASIER TO COMPARE W/ SAME X-AXIS
-
-#add onto current pipe, can use facet_wrap
-#to make graphs pretty, use ggthemes
-
 #attempt at smooth graph
 ggplot(data = subset(mass_shootings, 
                      race %in% c("White", "Black", "Latino")),
