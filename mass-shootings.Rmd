@@ -39,14 +39,15 @@ kable(shootings_yrpipe, caption = "Mass shootings (1982-2019)", col.names = c("Y
 
 ```{r}
 ### this is unnecessary. ask TAs about how i'd make a graph from this table
-shooter_race = mass_shootings %>%
+mass_shootings %>%
+  drop_na(race) %>%
   group_by(race) %>%
   summarize(
     count = n() 
-  ) %>%
-  arrange(desc(count)) %>%
-  na.omit()
-  
+  ) %>% ungroup() %>%
+  ggplot(mapping = aes(x=fct_reorder(race, -count), y = count)) +
+  geom_col()
+
 library(forcats)
 require(forcats)
 
@@ -55,11 +56,13 @@ ggplot(data = mass_shootings[!is.na(mass_shootings$race), ], mapping = aes(x = f
   labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Race of perpetrator", y = "Number of incidents")
 
 ####ask TAs about why the square brackets work, i.e. formatting of [!is.na(df$column),]
-
 #above works. can also do
 #ggplot(data = na.omit(mass_shootings[, c("race")]), aes(x=fct_infreq(race))) + 
  # geom_bar() +
   #labs(title = "Mass shootings in the U.S. (1982-2019)", x = "Race of perpetrator", y = "Number of incidents")
+#%>%
+  arrange(desc(count)) %>%
+  na.omit()
 
 ```
 
@@ -90,7 +93,12 @@ mass_shootings %>%
   glimpse()
 
 #### ask TAs about if you ever need to put TRUE or FAlSE in quotation marks. 
-#### also quotations vs backticks???
+#for this case, can just write "male". if looking for non-male, do "!male"
+
+#### also quotations vs backticks
+#backticks when you select columns
+#e.g. filter(`Race of Shooter` == “White”)
+
 ```
 **20 white males with prior signs of mental illness initiated a mass shooting after 2000.**
 
@@ -100,15 +108,25 @@ mass_shootings %>%
 #for table, need to group shootings by month. then arrange to see which month is biggest. 
 #### this 1st block is unnecessary for answering the q!
 mass_shootings %>%
+  mutate(month = factor(month,
+                  levels = month.abb)) %>%
   group_by(month) %>%
-  summarize(count = n() 
-  ) %>%
-  arrange(desc(count)) %>%
-  na.omit()
+  summarize(count = n() )   %>%
+  ungroup() %>%
+  ggplot(mapping = aes(x=month, y = count)) +
+  geom_col()
+  
+mass_shootings %>%
+  mutate(month = factor(month,
+                  levels = month.abb)) %>%
+  count(month) %>%
+  ggplot(mapping = aes(x=month, y = n)) +
+  geom_col()
 
 month_shootings = mass_shootings
 month_shootings$month = factor(mass_shootings$month,
                   levels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec"))
+#levels = month.abb
 
 ggplot(data = month_shootings[!is.na(month_shootings$month), ], mapping = aes(x = month)) +
  geom_bar() +
@@ -142,8 +160,8 @@ mapping = aes(x = fatalities)) +
   facet_grid(race ~ ., scales = "free")
 ### DO I NEED TO CHANGE THE X-AXIS OF THE FACET GRID? THINK IT'S EASIER TO COMPARE W/ SAME X-AXIS
 
-
-
+#add onto current pipe, can use facet_wrap
+#to make graphs pretty, use ggthemes
 
 #attempt at smooth graph
 ggplot(data = subset(mass_shootings, 
